@@ -45,6 +45,8 @@ open DMESG, '-|', join(' ', 'dmesg -r', @ARGV)
 	or abort($?, "Pipe failed.\n");
 
 while(<DMESG>) {
+	/^</ or next;
+
 	my ($level, $rts, $msg) = /^<(\d)>(\[[.\s\d]+\])?(.*)$/;
 	my $msgcolor;
 
