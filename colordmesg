@@ -38,8 +38,8 @@ use constant {
 
 use Term::ANSIColor qw(:constants);
 
-sub exit ($)   { CORE::exit($_[0] >> 8) }
-sub abort ($$) { print STDERR $_[1]; CORE::exit($_[0] >> 8) }
+sub do_exit ($)   { exit($_[0] >> 8) }
+sub abort ($$) { print STDERR $_[1]; do_exit($_[0]) }
 
 open DMESG, '-|', join(' ', 'dmesg -r', @ARGV)
 	or abort($?, "Pipe failed.\n");
@@ -66,4 +66,4 @@ while(<DMESG>) {
 
 close DMESG;
 
-exit($?);
+do_exit($?);
