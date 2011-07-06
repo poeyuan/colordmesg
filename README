@@ -1,0 +1,7 @@
+This is a simple dmesg(1) wrapper for Linux written in Perl; it
+applies colors to the log buffer's contents before printing for
+better readability (for people who like colored output, anyway).
+
+Should work with Perl 5.10 and later.
+
+Homepage: http://github.com/shikadilord/colordmesg

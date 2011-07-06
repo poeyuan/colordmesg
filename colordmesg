@@ -1,0 +1,69 @@
+#!/usr/bin/perl
+#
+# Linux kernel log buffer colorizer
+# Copyright (C) 2011 by Ignacio Riquelme Morelle <shadowm2006@gmail.com>
+#
+# Permission to use, copy, modify, and/or distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice is present in all copies.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+# IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
+# INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+# STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+# IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+#
+
+use strict;
+use warnings;
+
+exec 'dmesg', @ARGV if grep /^-[rn]$/, @ARGV;
+
+use constant {
+	KERN_EMERG		=> 0,
+	KERN_ALERT		=> 1,
+	KERN_CRIT		=> 2,
+	KERN_ERR		=> 3,
+	KERN_WARNING	=> 4,
+	KERN_NOTICE		=> 5,
+	KERN_INFO		=> 6,
+	KERN_DEBUG		=> 7,
+};
+
+use Term::ANSIColor qw(:constants);
+
+sub exit ($)   { CORE::exit($_[0] >> 8) }
+sub abort ($$) { print STDERR $_[1]; CORE::exit($_[0] >> 8) }
+
+open DMESG, '-|', join(' ', 'dmesg -r', @ARGV)
+	or abort($?, "Pipe failed.\n");
+
+while(<DMESG>) {
+	my ($level, $rts, $msg) = /^<(\d)>(\[[.\s\d]+\])?(.*)$/;
+	my $msgcolor;
+
+	if($level > KERN_INFO) {
+		$msgcolor = BOLD.BLACK;
+	} elsif($level == KERN_WARNING) {
+		$msgcolor = YELLOW;
+	} elsif($level == KERN_ERR) {
+		$msgcolor = BOLD.YELLOW;
+	} elsif($level == KERN_CRIT) {
+		$msgcolor = RED;
+	} elsif($level <= KERN_ALERT) {
+		$msgcolor = BOLD.RED;
+	}
+
+	no warnings qw(uninitialized);
+	print BOLD, BLACK, $rts, RESET, $msgcolor, $msg, "\n";
+}
+
+close DMESG;
+
+exit($?);
