@@ -34,6 +34,8 @@ use constant {
 	KERN_NOTICE		=> 5,
 	KERN_INFO		=> 6,
 	KERN_DEBUG		=> 7,
+
+	KERN_LAST		=> 9,
 };
 
 use Term::ANSIColor qw(:constants);
@@ -44,13 +46,16 @@ sub abort ($$) { print STDERR $_[1]; do_exit($_[0]) }
 open DMESG, '-|', join(' ', 'dmesg -r', @ARGV)
 	or abort($?, "Pipe failed.\n");
 
+my $msgcolor;
+
 while(<DMESG>) {
 	/^</ or print && next;
 
 	my ($level, $rts, $msg) = /^<(\d+)>(\[[.\s\d]+\])?(.*)$/;
-	my $msgcolor;
 
-	if($level > KERN_INFO) {
+	if($level > KERN_LAST) {
+		;
+	} elsif($level > KERN_INFO) {
 		$msgcolor = BOLD.BLACK;
 	} elsif($level == KERN_WARNING) {
 		$msgcolor = YELLOW;
@@ -60,6 +65,8 @@ while(<DMESG>) {
 		$msgcolor = RED;
 	} elsif($level <= KERN_ALERT) {
 		$msgcolor = BOLD.RED;
+	} else {
+		$msgcolor = '';
 	}
 
 	no warnings qw(uninitialized);
