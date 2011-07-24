@@ -47,7 +47,7 @@ open DMESG, '-|', join(' ', 'dmesg -r', @ARGV)
 while(<DMESG>) {
 	/^</ or print && next;
 
-	my ($level, $rts, $msg) = /^<(\d)>(\[[.\s\d]+\])?(.*)$/;
+	my ($level, $rts, $msg) = /^<(\d+)>(\[[.\s\d]+\])?(.*)$/;
 	my $msgcolor;
 
 	if($level > KERN_INFO) {
